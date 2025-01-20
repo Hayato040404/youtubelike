@@ -82,7 +82,7 @@
             if (file) {
                 formData.append('video', file);
                 
-                fetch('https://your-render-app-url.onrender.com/upload', {
+                fetch('https://youtubelike.onrender.com/upload', {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${token}` },
                     body: formData
@@ -97,7 +97,7 @@
         });
 
         function loadVideos() {
-            fetch('https://your-render-app-url.onrender.com/videos')
+            fetch('https://youtubelike.onrender.com/videos')
             .then(response => response.json())
             .then(data => {
                 const videoList = document.getElementById('videoList');
@@ -107,7 +107,7 @@
                     videoContainer.className = 'video-container';
 
                     const videoElement = document.createElement('video');
-                    videoElement.src = `https://your-render-app-url.onrender.com${video.url}`;
+                    videoElement.src = `https://youtubelike.onrender.com${video.url}`;
                     videoElement.controls = true;
                     videoElement.className = 'video-player';
 
