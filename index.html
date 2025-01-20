@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>動画共有サイト</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>動画共有サイト</h1>
+    </header>
+    <main>
+        <!-- ユーザー登録フォーム -->
+        <h2>ユーザー登録</h2>
+        <form id="registerForm">
+            <input type="text" id="registerUsername" placeholder="ユーザー名" required>
+            <input type="password" id="registerPassword" placeholder="パスワード" required>
+            <button type="submit">登録</button>
+        </form>
+        
+        <!-- ログインフォーム -->
+        <h2>ログイン</h2>
+        <form id="loginForm">
+            <input type="text" id="loginUsername" placeholder="ユーザー名" required>
+            <input type="password" id="loginPassword" placeholder="パスワード" required>
+            <button type="submit">ログイン</button>
+        </form>
+        
+        <!-- 動画アップロードフォーム -->
+        <h2>動画をアップロード</h2>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <input type="file" id="videoFile" accept="video/*" required>
+            <button type="submit">アップロード</button>
+        </form>
+        
+        <!-- 動画リスト -->
+        <h2>アップロードされた動画</h2>
+        <div id="videoList"></div>
+    </main>
+    
+    <script>
+        let token = '';
+
+        document.getElementById('registerForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const username = document.getElementById('registerUsername').value;
+            const password = document.getElementById('registerPassword').value;
+            fetch('https://your-render-app-url.onrender.com/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            })
+            .then(response => response.text())
+            .then(data => alert(data))
+            .catch(error => console.error('Error:', error));
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            fetch('https://your-render-app-url.onrender.com/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            })
+            .then(response => response.json())
+            .then(data => {
+                token = data.token;
+                alert('ログイン成功');
+            })
+            .catch(error => console.error('Error:', error));
+        });
+
+        document.getElementById('uploadForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData();
+            const fileInput = document.getElementById('videoFile');
+            const file = fileInput.files[0];
+            
+            if (file) {
+                formData.append('video', file);
+                
+                fetch('https://your-render-app-url.onrender.com/upload', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert('動画がアップロードされました！');
+                    loadVideos();
+                })
+                .catch(error => console.error('Error:', error));
+            }
+        });
+
+        function loadVideos() {
+            fetch('https://your-render-app-url.onrender.com/videos')
+            .then(response => response.json())
+            .then(data => {
+                const videoList = document.getElementById('videoList');
+                videoList.innerHTML = '';
+                data.forEach(video => {
+                    const videoContainer = document.createElement('div');
+                    videoContainer.className = 'video-container';
+
+                    const videoElement = document.createElement('video');
+                    videoElement.src = `https://your-render-app-url.onrender.com${video.url}`;
+                    videoElement.controls = true;
+                    videoElement.className = 'video-player';
+
+                    const videoTitle = document.createElement('p');
+                    videoTitle.textContent = video.filename;
+
+                    videoContainer.appendChild(videoElement);
+                    videoContainer.appendChild(videoTitle);
+                    videoList.appendChild(videoContainer);
+                });
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        loadVideos();
+    </script>
+</body>
+</html>
